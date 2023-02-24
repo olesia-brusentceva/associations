@@ -28,54 +28,65 @@ pacman::p_load(packages, character.only = T)
 sapply(packages, require, character.only = TRUE)
 
 ################################################################################################################
-#This blok shows how data was modifyed BUT DO NOT RUN IT cos last step was made in excel
+#This blok shows how data was modified BUT DO NOT RUN IT cos last step was made in excel
 #Loading Data
 #mbasket<-read.csv("MarketBasket.csv")
 #
 #formating Data
 #mbasket<-mbasket %>% group_by(Order) %>% summarise(Description = paste(unique(Description), collapse = ', '))
+#mbasket<-mbasket %>% mutate(across(where(is.character), tolower)) 
 #write.csv(mbasket, file="mbasket.csv")
 ################################################################################################################
 
 #Loading ready Data
 mbasket<- read.transactions("mbasket.csv", sep = ",")
 summary(mbasket)
-
 arules::inspect(mbasket[1:5]) #Look at first five transactions
 itemFrequency(mbasket[, 1:3]) 
 
-#Plot the frequency of items
 itemFrequencyPlot(mbasket, support = 0.1) #at least 10% of cases
-
-#Plot the frequency of items
-itemFrequencyPlot(mbasket, topN = 20, horiz = TRUE) #20 most frequent
-
-#Apply 'apriori' algorithm
-apriori(mbasket)
+itemFrequencyPlot(mbasket,
+                  topN = 20,
+                  horiz = TRUE,
+                  xlab = NULL,
+                  ylab = NULL) #20 most frequent
 
 #Add settings
-#mbasketrules <- 
-apriori(mbasket, parameter = list(support = 0.006, confidence = 0.25, minlen = 2))
-#Summary of grocery association rules
-summary(groceryrules)
+mbasketrules <- apriori(mbasket, parameter = list(support = 0.009, confidence = 0.25, minlen = 2))
+summary(mbasketrules)
+inspect(mbasketrules[1:10])
+inspect(sort(mbasketrules, by = "confidence")[1:3])
 
-#Look at the first three rules
-inspect(groceryrules[1:3])
+#######
+#RULES#
+#######
 
-#Sorting grocery rules by lift
-inspect(sort(groceryrules, by = "lift")[1:5])
+birth <- (3+6+1+9+9+9)*100
+#Finding subsets of rules
+#PS not interesting
+gourdrules <- subset(mbasketrules, items %in% "gourd / cucumber")
+inspect(gourdrules)
 
-#Finding subsets of rules containing any berry items
-berryrules <- subset(groceryrules, items %in% "berries")
-inspect(berryrules)
+#Finding subsets of rules 
+InstantNoodlesrules <- subset(mbasketrules, items %in% "instant noodles")
+inspect(instantnoodlesrules)
 
-# writing the rules to a CSV file
-write(groceryrules, file = "groceryrules.csv",
+#Finding subsets of rules 
+OrganicSaltRules <- subset(mbasketrules, items %in% "organic salt")
+inspect(OrganicSaltRules)
+
+#Finding subsets of rules containing 
+RiceRules <- subset(mbasketrules, items %in% "raw rice")
+inspect(RiceRules)
+#########
+#WRITING#
+#########
+# writing the rules to a CSV 
+write(InstantNoodlesrules, file = "InstantNoodlesrules.csv",
       sep = ",", quote = TRUE, row.names = FALSE)
 
-# converting the rule set to a data frame
-groceryrules_df <- as(groceryrules, "data.frame")
-str(groceryrules_df) #Compactly display structure of R object
+InstantNoodlesrules_df <- as(InstantNoodlesrules, "data.frame")
+str(InstantNoodlesrules_df) 
 
 
 
